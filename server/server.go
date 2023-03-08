@@ -131,13 +131,18 @@ func (server *Server) Run(ctx context.Context, options ...RunOption) error {
 		log.Printf("Once option is provided, accepting only one client")
 	}
 
-	if server.options.Port == "0" {
-		log.Printf("Port number configured to `0`, choosing a random port")
-	}
-	hostPort := net.JoinHostPort(server.options.Address, server.options.Port)
-	listener, err := net.Listen("tcp", hostPort)
-	if err != nil {
-		return errors.Wrapf(err, "failed to listen at `%s`", hostPort)
+	var listener net.Listener
+	if server.options.Listener != nil {
+		listener = server.options.Listener
+	} else {
+		if server.options.Port == "0" {
+			log.Printf("Port number configured to `0`, choosing a random port")
+		}
+		hostPort := net.JoinHostPort(server.options.Address, server.options.Port)
+		listener, err = net.Listen("tcp", hostPort)
+		if err != nil {
+			return errors.Wrapf(err, "failed to listen at `%s`", hostPort)
+		}
 	}
 
 	scheme := "http"
